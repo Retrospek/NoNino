@@ -1,5 +1,5 @@
 import React from 'react'
-import video from '../assets/video.mp4'
+import video from '../assets/landscape.mp4'
 
 const Main = () => {
   return (
@@ -7,7 +7,7 @@ const Main = () => {
         <video src = {video} autoPlay loop muted/>
         <div className = "content">
           <h1> Farming Reimagined </h1>
-          <p> El Ñino Environmental Effects </p>
+          <p> Say No To Niño </p>
         </div>
     </div>
   )

@@ -35,11 +35,5 @@
   to {
     transform: rotate(360deg);
   }
-  html {
-    scroll-behavior: auto;
-  }
-  body{
-    margin: 0;
-    height: 200vh;
-  }
+  html, body { height: 100%; scroll-snap-type: y mandatory; overflow-y: scroll; }
 }

@@ -4,6 +4,7 @@ import NewPage from './components/NewPage';
 import Product from './components/Product'; // Import the new page component
 import Main from './components/Main';
 import './App.css';
+import './index.css';
 
 function App() {
   return (
