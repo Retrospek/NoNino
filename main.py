@@ -1,82 +1,75 @@
-from flask import Flask, request
-from flask_cors import CORS
-import xgboost as xgb
+from flask import Flask, jsonify, request
+from flask_cors import CORS, cross_origin
 import numpy as np
 import joblib
-from tensorflow import keras
-import json
+import tensorflow as tf
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS
+# CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:*"}})
+CORS(app, support_credentials=True)
 
-# Load XGBoost models
-model_files = [
-    "models/xgboost_model_0.json",
-    "models/xgboost_model_1.json",
-    "models/xgboost_model_2.json",
-    "models/xgboost_model_3.json"
-]
-xgboost_models = [xgb.Booster(model_file=model_file) for model_file in model_files]
-
-# Load Keras model
+# Load models
 try:
-    keras_model = keras.models.load_model("models/my_model.h5")
-    print("Keras model loaded successfully.")
-except Exception as e:
-    print(f"Error loading Keras model: {e}")
-    keras_model = None
-
-# Load KMeans and StandardScaler models
-try:
+    mlp_model = tf.keras.models.load_model("models/my_model.h5")
     kmeans_model = joblib.load("models/kmeans_model.pkl")
-    scaler_model = joblib.load("models/standard_scaler.joblib")
-    print("KMeans and scaler models loaded successfully.")
+    scaler = joblib.load("models/standard_scaler.joblib")
 except Exception as e:
-    print(f"Error loading models: {e}")
-    kmeans_model = None
-    scaler_model = None
+    print(f"✗ Error loading models: {e}")
 
-@app.route("/predict", methods=["POST"])
+@app.route("/test", methods=["GET"])
+@cross_origin(supports_credentials=True)
+def test():
+    return jsonify({"status": "API is working!"})
+
+@app.route("/predict", methods=["POST", "OPTIONS"])
 def predict():
-    # Parse data as a numpy array from the request
-    data = request.get_data()
-    try:
-        # Assuming the data is sent as a serialized JSON array
-        features = np.array(json.loads(data))
-    except Exception as e:
-        return f"Error parsing data as numpy array: {e}", 400
-
-    # Ensure required models are loaded
-    if not (scaler_model and kmeans_model and keras_model):
-        return "One or more required models are not loaded", 500
+    if request.method == "OPTIONS":
+        return jsonify({"status": "OK"}), 200
 
     try:
-        # Extract and scale latitude and longitude for KMeans
-        latitude_longitude = features[:, [2, 3]]  # assuming columns 2 and 3 are Latitude and Longitude
-        scaled_lat_long = scaler_model.transform(latitude_longitude)
 
-        # Predict cluster using KMeans on scaled data
-        clusters = kmeans_model.predict(scaled_lat_long)
-        features = np.insert(features, 4, clusters, axis=1)  # Insert cluster as the 5th column
+        print("Received prediction request")
+        data = request.get_json()
+        print(f"Request data: {data}")
 
-        # Prepare data for XGBoost
-        dmatrix = xgb.DMatrix(features, feature_names=[" Month", " Day", " Latitude", " Longitude", "cluster", "Season"])
+        if not data:
+            return jsonify({"error": "No input data provided"}), 400
 
-        # Get predictions from each XGBoost model
-        xgboost_predictions = np.array([model.predict(dmatrix) for model in xgboost_models]).T
-        xgboost_average = np.mean(xgboost_predictions, axis=1)
+        # Process latitude and longitude
+        latitude_longitude = np.array([
+            float(data["Latitude"]),
+            float(data["Longitude"])
+        ]).reshape(1, -1)
 
-        # Get predictions from the Keras model
-        keras_predictions = keras_model.predict(features).flatten()
+        # Scale latitude and longitude
+        scaled_latitude_longitude = scaler.transform(latitude_longitude)
 
-        # Combine predictions into a final numpy array
-        combined_predictions = np.column_stack((xgboost_predictions, xgboost_average, keras_predictions))
+        # Predict cluster
+        cluster = int(kmeans_model.predict(scaled_latitude_longitude)[0])
 
-        return combined_predictions.tobytes(), 200  # Return as raw bytes
+        # Prepare features for the MLP model
+        features = np.array([
+            int(data["Month"]),
+            int(data["Day"]),
+            float(data["Latitude"]),
+            float(data["Longitude"]),
+            cluster,
+            int(data["Season"])
+        ]).reshape(1, -1)
+
+        prediction = float(mlp_model.predict(features)[0][0])
+        print(f"Prediction result: {prediction}")
+
+        return jsonify({
+            "status": "success",
+            "prediction": prediction,
+            "cluster": int(cluster)
+        })
 
     except Exception as e:
-        return f"Error during prediction: {e}", 500
+        print(f"Error in prediction: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
-# Main entry point
 if __name__ == "__main__":
-    app.run(debug=True)
+    print("Starting Flask server...")
+    app.run(port=5123)
