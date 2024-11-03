@@ -1,0 +1,87 @@
+import React, { useState } from 'react';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import './Product.css';
+
+
+export default function Product() {
+ const [selectedDate, setDate] = useState(new Date());
+ const [lat, setLat] = useState('');
+ const [long, setLong] = useState('');
+
+
+ const handleSubmit = async (event) => {
+   event.preventDefault();
+
+
+   const date = new Date(selectedDate);
+   const month = date.getMonth() + 1;
+   const day = date.getDate();
+
+
+   try {
+     const response = await fetch('http://localhost:8181/predict', {
+       method: 'POST',
+       headers: {
+           'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({
+           Month: month,
+           Day: day,
+           Latitude: parseFloat(lat),
+           Longitude: parseFloat(long),
+           Season: 1
+       }),
+     });
+  
+
+
+     if (!response.ok) {
+       throw new Error(`HTTP error! status: ${response.status}`);
+     }
+
+
+     const data = await response.json();
+     console.log(data);
+   } catch (error) {
+     console.error('Error making prediction request:', error);
+   }
+ };
+
+
+ return (
+   <>
+     <div className="Product">
+       <h1>Prediction Results</h1>
+       <h3>How will El Niño affect you?</h3>
+
+
+       <form onSubmit={handleSubmit}>
+         <div className="input-group">
+           <label className="input-label"><strong>Select the date of prediction:  </strong></label>
+           <DatePicker
+             selected={selectedDate}
+             onChange={date => setDate(date)}
+             dateFormat="MM/dd/yyyy"
+           />
+         </div>
+
+
+         <div className="input-group">
+           <label className="input-label"><strong>Enter the buoy's location latitude:  </strong></label>
+           <input type="text" id="latitude" value={lat} onChange={(e) => setLat(e.target.value)} />
+         </div>
+
+
+         <div className="input-group">
+           <label className="input-label"><strong>Enter the buoy's location longitude:  </strong></label>
+           <input type="text" id="longitude" value={long} onChange={(e) => setLong(e.target.value)} />
+         </div>
+
+
+         <button type="submit" className="submit-btn">Submit</button>
+       </form>
+     </div>
+   </>
+ );
+}
