@@ -5,7 +5,6 @@ body, html {
   overflow-y: scroll;
 }
 
-
 .new-page {
   display: flex;
   flex-direction: column;
@@ -27,13 +26,20 @@ body, html {
   flex: 1 1 calc(33.333% - 40px);
   max-width: 400px;
   cursor: pointer;
+  position: relative; /* To position the overlay */
+  overflow: hidden; /* Ensure overlay stays within the model */
 }
-
 
 .model img {
   width: 100%;
   height: auto;
   border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition for hover effect */
+}
+
+.model:hover img {
+  transform: scale(1.05); /* Slightly enlarge the image */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
 }
 
 .model p {
@@ -84,7 +90,6 @@ body, html {
   }
 }
 
-
 .modal {
   display: flex;
   position: fixed;
@@ -105,6 +110,7 @@ body, html {
   max-height: 80%;
   margin-bottom: 10px;
 }
+
 .caption { 
   color: white; 
   font-size: 1.2em; 

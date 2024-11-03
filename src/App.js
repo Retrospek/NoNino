@@ -47,7 +47,7 @@ function App() {
               <Main />
             </div>
             <div ref={sectionRef} className="section-2">
-              <p>Random information about El Niño</p>
+              <p>El Niño presents significant challenges to our environment, leading to disruptions in weather patterns that can greatly affect farming practices and agricultural yields. Our advanced model analyzes buoy data collected from across the Pacific Ocean to enhance predictions of temperature variations and wind vectors. By providing valuable insights, we assist weather services in making more accurate forecasts, ultimately helping farmers optimize their yields and adapt to the unpredictable impacts of El Niño.</p>
               <div className="button">
                 <Link to="/new-page">
                   <button type="button">PROCESS</button>
