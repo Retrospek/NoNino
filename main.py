@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from flask_restful import Api, Resource
 import json
 import xgboost as xgb
@@ -6,6 +7,7 @@ import numpy as np
 import joblib
 
 app = Flask(__name__)
+CORS(app)
 api = Api(app)
     
 model_files = ["models/xgboost_model_0.json", "models/xgboost_model_1.json", "models/xgboost_model_2.json", "models/xgboost_model_3.json"]
