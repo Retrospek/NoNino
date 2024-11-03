@@ -7,7 +7,7 @@ const Main = () => {
         <video src = {video} autoPlay loop muted/>
         <div className = "content">
           <h1> Farming Reimagined </h1>
-          <p> Say No To Niño </p>
+          <p> NoNiño </p>
         </div>
     </div>
   )
