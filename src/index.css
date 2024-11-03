@@ -1,13 +1,117 @@
-body {
+* {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
+  font-family: 'tahoma';
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  .main{
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    scroll-snap-align: start;
+    position: relative;
+  }
+
+  video{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .content{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+
+  }
+  .content h1{
+    font-size: 15vh;
+  }
+  .content p {
+    font-size: 8vh;
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0, .4);
+  }
+  .section{
+    height: 150vh;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    justify-content: center;
+    align-items: center;
+    color:black;
+    padding: 20px;
+  }
+
+  .section-1 {
+    height: 100vh;
+    background-color:black;
+    top: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    scroll-snap-align: start;
+  }
+
+  .section-2{ 
+    height: 100vh;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    scroll-snap-align: start;
+  }
+
+  .input-form {
+    display: flex;
+    flex-direction: column; 
+    gap: 10px; 
+    max-width: 300px; 
+}
+.input-form input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+.button{
+  margin-top: 20px;
+}
+.button button {
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: white;
+  border: 2px solid #007BFF;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+
+.button button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+  color: white;
+}
+.section-2 h1 {
+  margin-bottom: 20px; 
 }
