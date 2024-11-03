@@ -1,0 +1,73 @@
+from flask import Flask, jsonify, request 
+from flask_cors import CORS 
+import xgboost as xgb 
+import numpy as np 
+import joblib 
+
+app = Flask(__name__) 
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+
+# Load models
+model_files = [
+    "xgboost_model_0.json", 
+    "xgboost_model_2.json", 
+    "xgboost_model_3.json"
+]
+models = [xgb.Booster(model_file=model_file) for model_file in model_files]
+
+# Load kmeans and scaler models
+try:
+    kmeans_model = joblib.load("models/kmeans_model.pkl")
+    scaler_model = joblib.load("models/standard_scaler.joblib")
+except Exception as e:
+    print(f"Error loading models: {e}")
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No input data provided"}), 400
+
+    try:
+        # Access the data, removing any leading/trailing spaces in the keys
+        latitude = data.get("Latitude")
+        longitude = data.get("Longitude")
+        month = data.get("Month")
+        day = data.get("Day")
+        season = data.get("Season")
+
+        # Ensure all required data is present
+        if any(v is None for v in [latitude, longitude, month, day, season]):
+            return jsonify({"error": "Missing input data"}), 400
+
+        # Prepare latitude and longitude for scaling
+        lat_long = np.array([[latitude, longitude]])
+        scaled_lat_long = scaler_model.transform(lat_long)
+
+        # Get cluster prediction
+        cluster = int(kmeans_model.predict(scaled_lat_long)[0])
+
+        # Prepare feature array for model prediction
+        features = np.array([[month, day, latitude, longitude, cluster, season]])
+
+        # Prepare data for XGBoost
+        dmatrix = xgb.DMatrix(features, feature_names=["Month", "Day", "Latitude", "Longitude", "Cluster", "Season"])
+
+        # Get predictions from each model
+        predictions = [float(model.predict(dmatrix)[0]) for model in models]
+
+        # Calculate average prediction
+        average_prediction = np.mean(predictions)
+        response = {
+            "predictions": predictions,
+            "average_prediction": average_prediction
+        }
+
+        return jsonify(response)
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
+# Main entry point
+if __name__ == "__main__":
+    app.run(debug=True, port=3000)
